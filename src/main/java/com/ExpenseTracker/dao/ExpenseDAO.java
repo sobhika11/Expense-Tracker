@@ -24,7 +24,7 @@ public class ExpenseDAO {
     private static final String SELECT_TODO_BY_ID = "SELECT * FROM expense WHERE eid = ?";
     private static final String UPDATE_EXPENSE = "UPDATE expense SET description = ?, amount = ?, date = ? WHERE eid = ?";
     private static final String DELETE_EXPENSE = "DELETE FROM expense WHERE eid = ?";
-    private static final String FILTER_EXPENSE = "SELECT *FROM expense WHERE category = ? ";
+    private static final String FILTER_EXPENSE = "SELECT * FROM expense WHERE category = ? ";
     private static final String CATEGORY_ID="SELECT id FROM category WHERE name=?";
 
     public static Expense getById(int id) throws SQLException{
@@ -51,6 +51,29 @@ public class ExpenseDAO {
         Expense exp=new Expense(id,description,date,amt); 
         return exp;
 
+    }
+    public static List<Expense> filter(String st) throws SQLException
+    {
+        List<Expense>exp=new ArrayList<>();
+        try(
+            Connection conn=DatabaseConnection.getDBConnection();
+            PreparedStatement stmt=conn.prepareStatement(FILTER_EXPENSE))
+            {
+
+                stmt.setString(1, st);
+                ResultSet res=stmt.executeQuery();
+                while (res.next()) {
+                Expense e = new Expense();
+                e.setId(res.getInt("eid"));
+                e.setDescription(res.getString("description"));
+                e.setAmount(res.getDouble("amount"));
+                e.setDate(res.getString("date"));
+                e.setCategory(res.getString("category"));
+            exp.add(e);
+            }
+            return exp;
+        }
+        
     }
     public static int add(Expense exp) throws SQLException
     {

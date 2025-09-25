@@ -27,6 +27,7 @@ import java.util.List;
     private JButton refresh;
     private JTextField category;
     private JTextField dateField; 
+    private JComboBox<String> comboBox;
 
     public ExpenseGUI(){
         initializeComponents();
@@ -45,6 +46,7 @@ import java.util.List;
         updateExpense.addActionListener((e)->{update();});
         deleteExpense.addActionListener((e)->{delete();});
         refresh.addActionListener((e)->{refresh();});
+        comboBox.addActionListener((e)->{filterCat();});
     }
     private void setUpLayout() {
 
@@ -124,8 +126,13 @@ import java.util.List;
         }
     });
 
-    add(topPanel, BorderLayout.NORTH);                  
-    add(new JScrollPane(table), BorderLayout.CENTER);  
+    add(new JScrollPane(table), BorderLayout.CENTER); 
+    String [] cat={"Food","Rent","outing"};
+    comboBox=new JComboBox<>(cat);
+    JPanel comboPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+    comboPanel.add(comboBox);
+    topPanel.add(comboPanel, BorderLayout.WEST);
+    add(topPanel, BorderLayout.NORTH); 
     loadexpense();
     }
     private void clearSection(){
@@ -133,6 +140,20 @@ import java.util.List;
         amount.setText("");
         dateField.setText("");
         category.setText("");
+    }
+     private void filterCat(){
+        String cat=(String)comboBox.getSelectedItem();
+        try{
+
+            List<Expense>li=ExpenseDAO.filter(cat);
+            updateTable(li);
+        }
+        catch(SQLException e)
+        {
+            JOptionPane.showMessageDialog(this,"Error in filtering ", "Error", JOptionPane.INFORMATION_MESSAGE);
+        }
+        
+        
     }
     private void add(){
         String des = description.getText().trim();
@@ -249,6 +270,7 @@ import java.util.List;
                 tablemodel.addRow(row);
             }
         }
+        
 }
 
  class CategoryGUI extends JFrame{
@@ -258,7 +280,6 @@ import java.util.List;
     private JTextField category;
     private DefaultTableModel tablemodel;
     private JTable table;
-    private JComboBox<String> comboBox;
 
     public CategoryGUI(){
         initializeComponents();
@@ -276,6 +297,7 @@ import java.util.List;
         
 
     }
+    
     private void setUpLayout(){
         setLayout(new BorderLayout());
         JPanel buttonpanel=new JPanel(new FlowLayout());
@@ -299,8 +321,8 @@ import java.util.List;
         inputpanel.add(category,g);
 
         JPanel mainp=new JPanel(new BorderLayout());
-        mainp.add(inputpanel,BorderLayout.NORTH);
-        mainp.add(buttonpanel,BorderLayout.CENTER);
+        mainp.add(inputpanel,BorderLayout.CENTER);
+        mainp.add(buttonpanel,BorderLayout.SOUTH);
 
         String [] filterbox={"Id","categories"};
         tablemodel =new DefaultTableModel(filterbox,0)
@@ -312,37 +334,30 @@ import java.util.List;
             }
         };
         table=new JTable(tablemodel);
+        table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        table.getSelectionModel().addListSelectionListener(e -> {
+        if (!e.getValueIsAdjusting()) {
+            loadSelectedcat();
+            }
+        });
         JScrollPane scroll=new JScrollPane(table);
-        mainp.add(scroll,BorderLayout.SOUTH);
-        
-        
-       
-        String [] cat={"Food","Rent","outing"};
-        comboBox=new JComboBox<>(cat);
-        mainp.add(comboBox,BorderLayout.WEST);
-        add(mainp,BorderLayout.CENTER);
+        add(scroll,BorderLayout.CENTER);
+        add(mainp,BorderLayout.NORTH);
         
     }
-    private void filterCat(){
-        String cat=(String)comboBox.getSelectedItem();
-        try{
-
-            List<category>li=categoryDAO.filter(cat);
-            updateTable(li);
-        }
-        catch(SQLException e)
-        {
-            JOptionPane.showMessageDialog(this,"Error in filtering ", "Error", JOptionPane.INFORMATION_MESSAGE);
-        }
-        
-        
-    }
+   
     private void setupEventListeners(){
         addcategory.addActionListener((e)->{addc();});
         upadatecategory.addActionListener((e)->{updatec();});
         refreshcategory.addActionListener((e)->{refreshc();});
-        comboBox.addActionListener((e)->{filterCat();});
-    }
+        }
+    private void loadSelectedcat(){
+            int row = table.getSelectedRow();
+            if(row != -1){
+            category.setText((String)table.getValueAt(row, 1));
+            }
+        }
+
     private void loadcat() {
         try {
             List<category> list = categoryDAO.getAll();

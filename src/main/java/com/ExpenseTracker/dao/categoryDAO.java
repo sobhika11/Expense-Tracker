@@ -62,6 +62,7 @@ public class categoryDAO{
             PreparedStatement stmt=conn.prepareStatement(FILTER_CAT);
         )
         {
+            stmt.setString(1, st);
             ArrayList<category> list = new ArrayList<>();
             try (ResultSet rs = stmt.executeQuery()) {
                 while(rs.next()){
