@@ -41,7 +41,7 @@ import java.util.List;
     private void setupEventListeners(){
         addExpense.addActionListener((e)->{add();});
         updateExpense.addActionListener((e)->{update();});
-        // deleteExpense.addActionListener((e)->{delete()});
+        deleteExpense.addActionListener((e)->{delete();});
         refresh.addActionListener((e)->{refresh();});
     }
     private void setUpLayout() {
@@ -129,7 +129,12 @@ import java.util.List;
     add(new JScrollPane(table), BorderLayout.CENTER);  
     loadexpense();
 }
-
+    private void clearSection(){
+        description.setText("");
+        amount.setText("");
+        dateField.setText("");
+        category.setText("");
+    }
     private void add(){
         String des = description.getText().trim();
         String dateStr = dateField.getText().trim();
@@ -141,6 +146,7 @@ import java.util.List;
             exp.setId(newid);
             JOptionPane.showMessageDialog(this,  "Expense added Succesfully", "Success", JOptionPane.INFORMATION_MESSAGE);
             loadexpense();
+            clearSection();
 
         }
         catch(SQLException e){
@@ -149,41 +155,42 @@ import java.util.List;
         }
     }
 
-    // private void delete(){
-    //     int row = table.getSelectedRow();
-    //     if (row == -1) {
-    //         JOptionPane.showMessageDialog(this, "Please select a row to delete",
-    //                 "Validation Error", JOptionPane.WARNING_MESSAGE);
-    //         return;
-    //     }
+    private void delete(){
+        int row = table.getSelectedRow();
+        if (row == -1) {
+            JOptionPane.showMessageDialog(this, "Please select a row to delete",
+                    "Validation Error", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
         
-    //     int confirm = JOptionPane.showConfirmDialog(this,
-    //             "Are you sure you want to delete this expense?",
-    //             "Confirm Delete", JOptionPane.YES_NO_OPTION);
+        int confirm = JOptionPane.showConfirmDialog(this,
+                "Are you sure you want to delete this expense?",
+                "Confirm Delete", JOptionPane.YES_NO_OPTION);
 
-    //     if (confirm == JOptionPane.YES_OPTION) {
-    //         int id = (int) table.getValueAt(row, 0);
-    //         try {
-    //             boolean deleted = ExpenseDAO.delete(id);
-    //         if (deleted) {
-    //                 JOptionPane.showMessageDialog(this,
-    //                         "expense deleted successfully",
-    //                         "Success", JOptionPane.INFORMATION_MESSAGE);
-    //                 // loadTodos(); // refresh table
-    //             } else {
-    //                 JOptionPane.showMessageDialog(this,
-    //                         "Failed to delete todo",
-    //                         "Error", JOptionPane.ERROR_MESSAGE);
-    //             }
-    //         } catch (SQLException e) {
-    //             JOptionPane.showMessageDialog(this,
-    //                     "Error deleting expense: " + e.getMessage(),
-    //                     "Database Error", JOptionPane.ERROR_MESSAGE);
-    //             e.printStackTrace();
-    //         }
-    //     }
+        if (confirm == JOptionPane.YES_OPTION) {
+            int id = (int) table.getValueAt(row, 0);
+            try {
+                boolean deleted = ExpenseDAO.delete(id);
+            if (deleted) {
+                    JOptionPane.showMessageDialog(this,
+                            "expense deleted successfully",
+                            "Success", JOptionPane.INFORMATION_MESSAGE);
+                    loadexpense(); // refresh table
+                    clearSection();
+                } else {
+                    JOptionPane.showMessageDialog(this,
+                            "Failed to delete todo",
+                            "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            } catch (SQLException e) {
+                JOptionPane.showMessageDialog(this,
+                        "Error deleting expense: " + e.getMessage(),
+                        "Database Error", JOptionPane.ERROR_MESSAGE);
+                e.printStackTrace();
+            }
+        }
         
-    // }
+    }
     private void update(){
           int row = table.getSelectedRow();
     if (row==-1) {
@@ -200,6 +207,7 @@ import java.util.List;
               if (ExpenseDAO.updateTodo(exp)) {
                 JOptionPane.showMessageDialog(this, "expense updated successfully", "Success", JOptionPane.INFORMATION_MESSAGE);
                 loadexpense();
+                clearSection();
             } else {
                 JOptionPane.showMessageDialog(this, "Failed to update expense", "Error", JOptionPane.ERROR_MESSAGE);
                 }
@@ -211,7 +219,8 @@ import java.util.List;
             }
     }
     private void refresh(){
-
+        loadexpense();
+        clearSection();
     }
     
     private void loadexpense(){

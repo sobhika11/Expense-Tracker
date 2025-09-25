@@ -96,10 +96,18 @@ public class ExpenseDAO {
         }
         
     }
-    // public static int delete(int id) throws SQLException
-    // {
-
-    // }
+    public static boolean delete(int id) throws SQLException
+    {
+        try(
+            Connection conn=DatabaseConnection.getDBConnection();
+            PreparedStatement stmt=conn.prepareStatement(DELETE_EXPENSE);
+        )
+        {
+            stmt.setInt(1, id);
+            int rowsAffected=stmt.executeUpdate();
+            return rowsAffected>0;
+        }
+    }
     public static List<Expense> getAll() throws SQLException{
         List<Expense> exp=new ArrayList<>();
         try(
