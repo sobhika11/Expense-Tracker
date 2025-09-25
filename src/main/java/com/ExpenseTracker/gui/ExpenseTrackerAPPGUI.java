@@ -23,7 +23,7 @@ import java.util.List;
     private JButton updateExpense;
     private JButton deleteExpense;
     private JButton refresh;
-    private JTextArea category;
+    private JTextField category;
     private JTextField dateField; 
 
     public ExpenseGUI(){
@@ -86,6 +86,19 @@ import java.util.List;
     dateField = new JTextField(10);
     dateField.setPreferredSize(new Dimension(100, 25));
     inputPanel.add(dateField, g);
+    
+    g.gridx=0;
+    g.gridy=3;
+    inputPanel.add(new JLabel("Category"),g);
+
+    g.gridx=1;
+    g.gridy=3;
+    category=new JTextField(7);
+    category.setPreferredSize(new Dimension(100,25));
+    inputPanel.add(category,g);
+    // String [] cat={"Food","Rent","outing"};
+    // JComboBox<String>comboBox=new JComboBox<>();
+
 
     JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
     buttonPanel.add(addExpense);
@@ -97,7 +110,7 @@ import java.util.List;
     topPanel.add(inputPanel, BorderLayout.CENTER);
     topPanel.add(buttonPanel, BorderLayout.SOUTH);
 
-    String[] columnNames = {"ID", "Description", "Amount", "Date"};
+    String[] columnNames = {"ID", "Description", "Amount", "Date","Category"};
     tablemodel = new DefaultTableModel(columnNames, 0) {
         @Override
         public boolean isCellEditable(int row, int column) {
@@ -108,27 +121,30 @@ import java.util.List;
     table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     table.getSelectionModel().addListSelectionListener(e -> {
         if (!e.getValueIsAdjusting()) {
-            loadSelectedtodo();
+            loadSelectedexpense();
         }
     });
 
     add(topPanel, BorderLayout.NORTH);                  
     add(new JScrollPane(table), BorderLayout.CENTER);  
-    loadTodos();
+    loadexpense();
 }
 
     private void add(){
         String des = description.getText().trim();
         String dateStr = dateField.getText().trim();
+        String cat=category.getText().trim();
         try{
-            int amt = Integer.parseInt(amount.getText().trim());
-            Expense exp = new Expense(des, dateStr, amt);
-            ExpenseDAO.add(exp);
+            double amt = Double.parseDouble(amount.getText().trim());
+            Expense exp = new Expense(des,dateStr,amt,cat);
+            int newid=ExpenseDAO.add(exp);
+            exp.setId(newid);
             JOptionPane.showMessageDialog(this,  "Expense added Succesfully", "Success", JOptionPane.INFORMATION_MESSAGE);
+            loadexpense();
 
         }
         catch(SQLException e){
-            JOptionPane.showMessageDialog(this,"Error adding Todo", "Failure",JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this,"Error adding expense", "Failure",JOptionPane.ERROR_MESSAGE);
 
         }
     }
@@ -171,26 +187,26 @@ import java.util.List;
     private void update(){
           int row = table.getSelectedRow();
     if (row==-1) {
-        JOptionPane.showMessageDialog(this, "Please select a todo to update", "Validation Selection", JOptionPane.WARNING_MESSAGE);
+        JOptionPane.showMessageDialog(this, "Please select a expense to update", "Validation Selection", JOptionPane.WARNING_MESSAGE);
         return;
         }
-    String title = description.getText().trim();
+    String des = description.getText().trim();
     int id = (int) table.getValueAt(row, 0);
     try {
         Expense exp=ExpenseDAO.getById(id);
         if (exp != null) {
-            exp.setAmount(Integer.parseInt(amount.getText().trim()));
+            exp.setAmount(Double.parseDouble(amount.getText().trim()));
             exp.setDescription(description.getText().trim());
               if (ExpenseDAO.updateTodo(exp)) {
-                JOptionPane.showMessageDialog(this, "Todo updated successfully", "Success", JOptionPane.INFORMATION_MESSAGE);
-                // loadTodos();
+                JOptionPane.showMessageDialog(this, "expense updated successfully", "Success", JOptionPane.INFORMATION_MESSAGE);
+                loadexpense();
             } else {
-                JOptionPane.showMessageDialog(this, "Failed to update todo", "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Failed to update expense", "Error", JOptionPane.ERROR_MESSAGE);
                 }
             }
         } 
         catch (SQLException e) {
-        JOptionPane.showMessageDialog(this, "Error updating todo: " + e.getMessage(), "Database Error", JOptionPane.ERROR_MESSAGE);
+        JOptionPane.showMessageDialog(this, "Error updating expense: " + e.getMessage(), "Database Error", JOptionPane.ERROR_MESSAGE);
         e.printStackTrace();
             }
     }
@@ -198,28 +214,30 @@ import java.util.List;
 
     }
     
-    private void loadTodos(){
+    private void loadexpense(){
         try{
-            List<Expense> exp = ExpenseDAO.getAllTodos();
+            List<Expense> exp = ExpenseDAO.getAll();
             updateTable(exp);
         }catch(SQLException e){
             JOptionPane.showMessageDialog(this, "Error loading todos : "+e.getMessage(),"Database Error",JOptionPane.ERROR_MESSAGE);
         }
 
     }
-    private void loadSelectedtodo(){
+    private void loadSelectedexpense(){
         int row = table.getSelectedRow();
         if(row != -1){
-            description.setText((String) table.getValueAt(row, 1));
-            description.setText((String) table.getValueAt(row, 2));
-            amount.setText(String.valueOf(table.getValueAt(row, 3)));
+        description.setText((String) table.getValueAt(row, 1));
+        amount.setText(String.valueOf(table.getValueAt(row, 2))); // convert Integer to String
+        dateField.setText(String.valueOf(table.getValueAt(row, 3)));
+        category.setText((String)table.getValueAt(row, 4));
+        
         }
     }
 
     private void updateTable(List<Expense> exp){
         tablemodel.setRowCount(0);
         for(Expense e : exp){
-            Object[] row = {e.getCid(),e.getDescription(),e.getDate(),e.getAmount()};
+            Object[] row = {e.getId(),e.getDescription(),e.getAmount(),e.getDate(),e.getCategory()};
             tablemodel.addRow(row);
         }
     }
@@ -233,7 +251,7 @@ import java.util.List;
 
     private DefaultTableModel tablemodel;
     private JTable table;
-    private JTextField category;
+    private JComboBox category;
     private JComboBox<String> filterComboBox;
 
     public CategoryGUI(){

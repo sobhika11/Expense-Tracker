@@ -1,10 +1,5 @@
-com\ExpenseTracker\Main.class
-com\ExpenseTracker\gui\CategoryGUI.class
 com\ExpenseTracker\dao\ExpenseDAO.class
+com\ExpenseTracker\Main.class
 com\ExpenseTracker\util\DatabaseConnection.class
-com\ExpenseTracker\gui\CategoryGUI$1.class
 com\ExpenseTracker\model\category.class
 com\ExpenseTracker\model\Expense.class
-com\ExpenseTracker\gui\ExpenseGUI$1.class
-com\ExpenseTracker\gui\ExpenseGUI.class
-com\ExpenseTracker\gui\ExpenseTrackerAPPGUI.class

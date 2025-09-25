@@ -14,12 +14,13 @@ import java.sql.Statement;
 import java.time.LocalDateTime;
 
 public class ExpenseDAO {
-    private static final String SELECT_ALL = "SELECT * FROM expense order by date DESC";
-    private static final String INSERT_EXPENSE="Insert INTO expense(description,amount,date) VALUES(?,?,?)";
-    private static final String SELECT_TODO_BY_ID = "SELECT * FROM expense WHERE cid = ?";
-    private static final String UPDATE_EXPENSE = "UPDATE expense SET description = ?, amount = ?, date = ? WHERE cid = ?";
-    private static final String DELETE_ExPENSE = "DELETE FROM expense WHERE cid = ?";
-    private static final String FILTER_ExPENSE = "SELECT *FROM expense WHERE category = ? ";
+    private static final String SELECT_ALL = "SELECT * FROM expense order by eid ";
+    private static final String INSERT_EXPENSE="Insert INTO expense(description,amount,date,category,cid) VALUES(?,?,?,?,?)";
+    private static final String SELECT_TODO_BY_ID = "SELECT * FROM expense WHERE eid = ?";
+    private static final String UPDATE_EXPENSE = "UPDATE expense SET description = ?, amount = ?, date = ? WHERE eid = ?";
+    private static final String DELETE_EXPENSE = "DELETE FROM expense WHERE eid = ?";
+    private static final String FILTER_EXPENSE = "SELECT *FROM expense WHERE category = ? ";
+    private static final String CATEGORY_ID="SELECT id FROM category WHERE name=?";
 
     public static Expense getById(int id) throws SQLException{
         try (
@@ -38,10 +39,10 @@ public class ExpenseDAO {
     }
     public static Expense getByRow(ResultSet res)throws SQLException
     {
-        int id=res.getInt("cid");
+        int id=res.getInt("eid");
         String description=res.getString("description");
         String date=res.getString("date");
-        int amt=res.getInt("amount");
+        double amt=res.getDouble("amount");
         Expense exp=new Expense(id,description,date,amt); 
         return exp;
 
@@ -51,13 +52,22 @@ public class ExpenseDAO {
         try(
             Connection conn=DatabaseConnection.getDBConnection();
             PreparedStatement stmt = conn.prepareStatement(INSERT_EXPENSE, Statement.RETURN_GENERATED_KEYS);
-        )
-        {
-            stmt.setString(1,exp.getDescription());
-            stmt.setDouble(2,exp.getAmount());
+            PreparedStatement stmt2 = conn.prepareStatement(CATEGORY_ID);
+            )
+            {
+            stmt2.setString(1, exp.getCategory());
+            ResultSet cat_id = stmt2.executeQuery();
+            int catid = 0;
+            if(cat_id.next()) catid = cat_id.getInt("id");
+            cat_id.close();
+            stmt.setString(1, exp.getDescription());
+            stmt.setDouble(2, exp.getAmount());
             stmt.setString(3, exp.getDate());
+            stmt.setString(4, exp.getCategory()); 
+            stmt.setInt(5, catid);
             int rowAffected=stmt.executeUpdate();
-            if(rowAffected==0){
+
+                        if(rowAffected==0){
                throw new SQLException("Creating expense is failed ,no row is Insertes");
             }
             try(ResultSet generatedKeys = stmt.getGeneratedKeys()){
@@ -80,6 +90,7 @@ public class ExpenseDAO {
             stmt.setString(1, exp.getDescription());
             stmt.setString(3, exp.getDate());
             stmt.setDouble(2, exp.getAmount());
+            stmt.setInt(4, exp.getId());
             int rowsAffected = stmt.executeUpdate();
             return rowsAffected > 0;
         }
@@ -89,7 +100,7 @@ public class ExpenseDAO {
     // {
 
     // }
-    public static List<Expense> getAllTodos() throws SQLException{
+    public static List<Expense> getAll() throws SQLException{
         List<Expense> exp=new ArrayList<>();
         try(
             Connection conn = DatabaseConnection.getDBConnection();
@@ -102,7 +113,7 @@ public class ExpenseDAO {
             }
         } catch(SQLException e) {
             System.err.println("Error fetching expense: "+e.getMessage());
-            throw e; // rethrow the exception after logging
+            throw e;
 
         }
         return exp;
