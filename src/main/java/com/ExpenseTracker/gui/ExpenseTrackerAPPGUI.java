@@ -4,9 +4,11 @@ import javax.swing.table.DefaultTableModel;
 
 import com.ExpenseTracker.dao.ExpenseDAO;
 import com.ExpenseTracker.model.Expense;
+import com.ExpenseTracker.model.category;
+import com.ExpenseTracker.dao.categoryDAO;
+import com.ExpenseTracker.*;
 
 import javax.swing.*;
-
 import java.awt.*; 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -96,9 +98,6 @@ import java.util.List;
     category=new JTextField(7);
     category.setPreferredSize(new Dimension(100,25));
     inputPanel.add(category,g);
-    // String [] cat={"Food","Rent","outing"};
-    // JComboBox<String>comboBox=new JComboBox<>();
-
 
     JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
     buttonPanel.add(addExpense);
@@ -128,7 +127,7 @@ import java.util.List;
     add(topPanel, BorderLayout.NORTH);                  
     add(new JScrollPane(table), BorderLayout.CENTER);  
     loadexpense();
-}
+    }
     private void clearSection(){
         description.setText("");
         amount.setText("");
@@ -191,80 +190,81 @@ import java.util.List;
         }
         
     }
-    private void update(){
-          int row = table.getSelectedRow();
-    if (row==-1) {
-        JOptionPane.showMessageDialog(this, "Please select a expense to update", "Validation Selection", JOptionPane.WARNING_MESSAGE);
-        return;
-        }
-    String des = description.getText().trim();
-    int id = (int) table.getValueAt(row, 0);
-    try {
-        Expense exp=ExpenseDAO.getById(id);
-        if (exp != null) {
-            exp.setAmount(Double.parseDouble(amount.getText().trim()));
-            exp.setDescription(description.getText().trim());
-              if (ExpenseDAO.updateTodo(exp)) {
-                JOptionPane.showMessageDialog(this, "expense updated successfully", "Success", JOptionPane.INFORMATION_MESSAGE);
-                loadexpense();
-                clearSection();
-            } else {
-                JOptionPane.showMessageDialog(this, "Failed to update expense", "Error", JOptionPane.ERROR_MESSAGE);
+        private void update(){
+            int row = table.getSelectedRow();
+        if (row==-1) {
+            JOptionPane.showMessageDialog(this, "Please select a expense to update", "Validation Selection", JOptionPane.WARNING_MESSAGE);
+            return;
+            }
+        String des = description.getText().trim();
+        int id = (int) table.getValueAt(row, 0);
+        try {
+            Expense exp=ExpenseDAO.getById(id);
+            if (exp != null) {
+                exp.setAmount(Double.parseDouble(amount.getText().trim()));
+                exp.setDescription(description.getText().trim());
+                if (ExpenseDAO.updateTodo(exp)) {
+                    JOptionPane.showMessageDialog(this, "expense updated successfully", "Success", JOptionPane.INFORMATION_MESSAGE);
+                    loadexpense();
+                    clearSection();
+                } else {
+                    JOptionPane.showMessageDialog(this, "Failed to update expense", "Error", JOptionPane.ERROR_MESSAGE);
+                    }
                 }
-            }
-        } 
-        catch (SQLException e) {
-        JOptionPane.showMessageDialog(this, "Error updating expense: " + e.getMessage(), "Database Error", JOptionPane.ERROR_MESSAGE);
-        e.printStackTrace();
-            }
-    }
-    private void refresh(){
-        loadexpense();
-        clearSection();
-    }
-    
-    private void loadexpense(){
-        try{
-            List<Expense> exp = ExpenseDAO.getAll();
-            updateTable(exp);
-        }catch(SQLException e){
-            JOptionPane.showMessageDialog(this, "Error loading todos : "+e.getMessage(),"Database Error",JOptionPane.ERROR_MESSAGE);
+            } 
+            catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Error updating expense: " + e.getMessage(), "Database Error", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
+                }
         }
-
-    }
-    private void loadSelectedexpense(){
-        int row = table.getSelectedRow();
-        if(row != -1){
-        description.setText((String) table.getValueAt(row, 1));
-        amount.setText(String.valueOf(table.getValueAt(row, 2))); // convert Integer to String
-        dateField.setText(String.valueOf(table.getValueAt(row, 3)));
-        category.setText((String)table.getValueAt(row, 4));
+        private void refresh(){
+            loadexpense();
+            clearSection();
+        }
         
-        }
-    }
+        private void loadexpense(){
+            try{
+                List<Expense> exp = ExpenseDAO.getAll();
+                updateTable(exp);
+            }catch(SQLException e){
+                JOptionPane.showMessageDialog(this, "Error loading expense : "+e.getMessage(),"Database Error",JOptionPane.ERROR_MESSAGE);
+            }
 
-    private void updateTable(List<Expense> exp){
-        tablemodel.setRowCount(0);
-        for(Expense e : exp){
-            Object[] row = {e.getId(),e.getDescription(),e.getAmount(),e.getDate(),e.getCategory()};
-            tablemodel.addRow(row);
         }
-    }
+        private void loadSelectedexpense(){
+            int row = table.getSelectedRow();
+            if(row != -1){
+            description.setText((String) table.getValueAt(row, 1));
+            amount.setText(String.valueOf(table.getValueAt(row, 2))); // convert Integer to String
+            dateField.setText(String.valueOf(table.getValueAt(row, 3)));
+            category.setText((String)table.getValueAt(row, 4));
+            
+            }
+        }
+
+        private void updateTable(List<Expense> exp){
+            tablemodel.setRowCount(0);
+            for(Expense e : exp){
+                Object[] row = {e.getId(),e.getDescription(),e.getAmount(),e.getDate(),e.getCategory()};
+                tablemodel.addRow(row);
+            }
+        }
 }
 
  class CategoryGUI extends JFrame{
     private JButton addcategory;
     private JButton upadatecategory;
-    private JButton deletecategory;
     private JButton refreshcategory;
-
+    private JTextField category;
     private DefaultTableModel tablemodel;
     private JTable table;
-    private JComboBox category;
-    private JComboBox<String> filterComboBox;
+    private JComboBox<String> comboBox;
 
     public CategoryGUI(){
         initializeComponents();
+        setUpLayout();
+        setupEventListeners();
+        loadcat();
         
     }
     private void initializeComponents(){
@@ -272,7 +272,37 @@ import java.util.List;
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(800, 600);
         setLocationRelativeTo(null);
-        String [] filterbox={"Rent","Food"};
+       
+        
+
+    }
+    private void setUpLayout(){
+        setLayout(new BorderLayout());
+        JPanel buttonpanel=new JPanel(new FlowLayout());
+        addcategory=new JButton("Add");
+        upadatecategory=new JButton("Update");
+        refreshcategory=new JButton("Refresh");
+        buttonpanel.add(addcategory);
+        buttonpanel.add(upadatecategory);
+        buttonpanel.add(refreshcategory);
+
+        JPanel inputpanel=new JPanel(new GridBagLayout());
+        GridBagConstraints g=new GridBagConstraints();
+        g.insets=new Insets(10,10,10,10);
+        g.gridx=0;
+        g.gridy=0;
+        inputpanel.add(new JLabel("Category"));
+        
+        g.gridx=1;
+        category=new JTextField();
+        category.setPreferredSize(new Dimension(50,25));
+        inputpanel.add(category,g);
+
+        JPanel mainp=new JPanel(new BorderLayout());
+        mainp.add(inputpanel,BorderLayout.NORTH);
+        mainp.add(buttonpanel,BorderLayout.CENTER);
+
+        String [] filterbox={"Id","categories"};
         tablemodel =new DefaultTableModel(filterbox,0)
         {
             @Override
@@ -281,7 +311,96 @@ import java.util.List;
                 return false;
             }
         };
+        table=new JTable(tablemodel);
+        JScrollPane scroll=new JScrollPane(table);
+        mainp.add(scroll,BorderLayout.SOUTH);
+        
+        
+       
+        String [] cat={"Food","Rent","outing"};
+        comboBox=new JComboBox<>(cat);
+        mainp.add(comboBox,BorderLayout.WEST);
+        add(mainp,BorderLayout.CENTER);
+        
+    }
+    private void filterCat(){
+        String cat=(String)comboBox.getSelectedItem();
+        try{
 
+            List<category>li=categoryDAO.filter(cat);
+            updateTable(li);
+        }
+        catch(SQLException e)
+        {
+            JOptionPane.showMessageDialog(this,"Error in filtering ", "Error", JOptionPane.INFORMATION_MESSAGE);
+        }
+        
+        
+    }
+    private void setupEventListeners(){
+        addcategory.addActionListener((e)->{addc();});
+        upadatecategory.addActionListener((e)->{updatec();});
+        refreshcategory.addActionListener((e)->{refreshc();});
+        comboBox.addActionListener((e)->{filterCat();});
+    }
+    private void loadcat() {
+        try {
+            List<category> list = categoryDAO.getAll();
+            updateTable(list);
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Error loading categories: " + e.getMessage(), "Database Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void updateTable(List<category> list) {
+        tablemodel.setRowCount(0);
+        for (category c : list) {
+            Object[] row = {c.getId(), c.getName()};
+            tablemodel.addRow(row);
+        }
+    }
+    private void addc(){
+        String cate=category.getText().trim();
+        try{
+            category cat=new category(cate);
+            categoryDAO.add(cat);
+            JOptionPane.showMessageDialog(this, "Category added successfully", "sucess", JOptionPane.INFORMATION_MESSAGE);
+            loadcat();
+            clearSection();
+        }
+        catch(SQLException e)
+        {
+            JOptionPane.showMessageDialog(this, "Error adding category ", "Error", JOptionPane.INFORMATION_MESSAGE);
+        }
+    }
+
+    private void updatec(){
+        int row = table.getSelectedRow();
+        if (row==-1) {
+            JOptionPane.showMessageDialog(this, "Please select a category to update", "Validation Selection", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        String cate=category.getText().trim();
+        try{
+            int id=(int) table.getValueAt(row,0);
+            com.ExpenseTracker.model.category cat=new com.ExpenseTracker.model.category(id,cate);
+            categoryDAO.update(cat);
+            JOptionPane.showMessageDialog(this, "Updated succesfully", "Success", JOptionPane.INFORMATION_MESSAGE);
+            loadcat();
+            clearSection();
+        }
+        catch(SQLException e)
+        {
+            JOptionPane.showMessageDialog(this, "Error updating category ", "Error", JOptionPane.INFORMATION_MESSAGE);
+        }
+    }
+
+
+    private void refreshc(){
+        loadcat();
+    }
+    private void clearSection(){
+        category.setText("");
     }
 }
 

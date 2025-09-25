@@ -2,6 +2,14 @@ package com.ExpenseTracker.model;
 public class category {
     private int id;
     private String name;
+    public category(int id,String name){
+        this.id=id;
+        this.name=name;
+    }
+    public category(String name )
+    {
+        this.name=name;
+    }
     public int getId() {
         return id;
     }
@@ -14,5 +22,6 @@ public class category {
     public void setName(String name) {
         this.name = name;
     }
+    
     
 }

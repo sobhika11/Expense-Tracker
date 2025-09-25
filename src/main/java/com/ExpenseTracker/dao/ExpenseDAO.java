@@ -1,10 +1,14 @@
 package com.ExpenseTracker.dao;
 
 import com.ExpenseTracker.util.DatabaseConnection;
+import java.sql.ResultSet;
 import com.ExpenseTracker.model.Expense;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.xml.crypto.Data;
+
 import java.sql.Timestamp;
 import java.sql.*;
 import java.sql.Connection;
@@ -12,6 +16,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.time.LocalDateTime;
+import com.ExpenseTracker.model.category;
 
 public class ExpenseDAO {
     private static final String SELECT_ALL = "SELECT * FROM expense order by eid ";
@@ -128,6 +133,5 @@ public class ExpenseDAO {
         
 
     }
-
 
 }
