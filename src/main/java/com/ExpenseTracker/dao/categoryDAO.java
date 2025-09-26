@@ -7,6 +7,9 @@ import com.ExpenseTracker.model.Expense;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.swing.JOptionPane;
+
 import java.sql.Timestamp;
 import java.awt.Taskbar.State;
 import java.sql.*;
@@ -23,6 +26,8 @@ public class categoryDAO{
     private static final String SELECT_CAT_BY_ID = "SELECT * FROM category WHERE id = ?";
     private static final String UPDATE_CAT = "UPDATE category SET name = ? WHERE id=?";
     private static final String FILTER_CAT="SELECT * FROM category WHERE name=?";
+    private static final String DETELE_CAT="DELETE FROM category WHERE id=?";
+    private static final String GET_ALL_CAT="SELECT * FROM category";
 
     public static int add(category cat) throws SQLException
     {
@@ -46,6 +51,36 @@ public class categoryDAO{
         }
 
 
+    }
+    public static String[] getAllCat(){
+        List<String> st=new ArrayList<>();
+        try(
+            Connection conn=DatabaseConnection.getDBConnection();
+            PreparedStatement stmt=conn.prepareStatement(GET_ALL_CAT);
+        ){
+            ResultSet res=stmt.executeQuery();
+            while(res.next())
+            {
+                st.add(res.getString("name"));
+            }
+            return st.toArray(new String[0]);
+        }
+        catch(SQLException e)
+        {
+            e.printStackTrace(); 
+            return new String[0];
+        }
+    }
+    public static boolean delete (int id) throws SQLException
+    {
+        try(Connection conn=DatabaseConnection.getDBConnection();
+            PreparedStatement stmt=conn.prepareStatement(DETELE_CAT);
+        ){
+            stmt.setInt(1,id);
+            int row=stmt.executeUpdate();
+            return row>0;
+
+        }
     }
     public static category getByRow(ResultSet res)throws SQLException
     {

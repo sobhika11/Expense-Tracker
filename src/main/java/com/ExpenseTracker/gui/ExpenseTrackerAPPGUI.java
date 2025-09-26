@@ -63,6 +63,7 @@ import java.util.List;
 
     g.gridx = 0;
     g.gridy = 0;
+    g.anchor=GridBagConstraints.WEST;
     inputPanel.add(new JLabel("Description:"), g);
 
     g.gridx = 1;
@@ -70,35 +71,43 @@ import java.util.List;
     description.setLineWrap(true);
     description.setWrapStyleWord(true);
     JScrollPane scroll = new JScrollPane(description);
-    scroll.setPreferredSize(new Dimension(150, 50));
+    g.fill=GridBagConstraints.HORIZONTAL;
     inputPanel.add(scroll, g);
 
     g.gridx = 0;
     g.gridy = 1;
+    g.anchor=GridBagConstraints.WEST;
     inputPanel.add(new JLabel("Amount:"), g);
 
     g.gridx = 1;
+    g.anchor=GridBagConstraints.WEST;
     amount = new JTextField(10);
-    amount.setPreferredSize(new Dimension(100, 25));
+    g.fill=GridBagConstraints.HORIZONTAL;
     inputPanel.add(amount, g);
+
 
     g.gridx = 0;
     g.gridy = 2;
+    g.anchor=GridBagConstraints.WEST;
     inputPanel.add(new JLabel("Date (yyyy-MM-dd):"), g);
 
     g.gridx = 1;
+    g.anchor=GridBagConstraints.WEST;
     dateField = new JTextField(10);
-    dateField.setPreferredSize(new Dimension(100, 25));
+    g.fill=GridBagConstraints.HORIZONTAL;
     inputPanel.add(dateField, g);
     
     g.gridx=0;
     g.gridy=3;
+    g.anchor=GridBagConstraints.WEST;
     inputPanel.add(new JLabel("Category"),g);
 
     g.gridx=1;
     g.gridy=3;
+    g.anchor=GridBagConstraints.WEST;
     category=new JTextField(7);
-    category.setPreferredSize(new Dimension(100,25));
+    g.anchor=GridBagConstraints.WEST;
+    g.fill=GridBagConstraints.HORIZONTAL;
     inputPanel.add(category,g);
 
     JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
@@ -127,7 +136,7 @@ import java.util.List;
     });
 
     add(new JScrollPane(table), BorderLayout.CENTER); 
-    String [] cat={"Food","Rent","outing"};
+    String []cat=categoryDAO.getAllCat();
     comboBox=new JComboBox<>(cat);
     JPanel comboPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
     comboPanel.add(comboBox);
@@ -157,8 +166,16 @@ import java.util.List;
     }
     private void add(){
         String des = description.getText().trim();
+        if(des.equals("")){
+            JOptionPane.showMessageDialog(this, "Description cannot be empty","error",JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
         String dateStr = dateField.getText().trim();
         String cat=category.getText().trim();
+        if(cat.equals("")){
+            JOptionPane.showMessageDialog(this, "Category cannot be empty","error",JOptionPane.INFORMATION_MESSAGE);
+             return;
+        }
         try{
             double amt = Double.parseDouble(amount.getText().trim());
             Expense exp = new Expense(des,dateStr,amt,cat);
@@ -275,6 +292,7 @@ import java.util.List;
 
  class CategoryGUI extends JFrame{
     private JButton addcategory;
+    private JButton deletecategory;
     private JButton upadatecategory;
     private JButton refreshcategory;
     private JTextField category;
@@ -304,8 +322,10 @@ import java.util.List;
         addcategory=new JButton("Add");
         upadatecategory=new JButton("Update");
         refreshcategory=new JButton("Refresh");
+        deletecategory = new JButton("Delete");
         buttonpanel.add(addcategory);
         buttonpanel.add(upadatecategory);
+        buttonpanel.add(deletecategory);
         buttonpanel.add(refreshcategory);
 
         JPanel inputpanel=new JPanel(new GridBagLayout());
@@ -349,6 +369,7 @@ import java.util.List;
     private void setupEventListeners(){
         addcategory.addActionListener((e)->{addc();});
         upadatecategory.addActionListener((e)->{updatec();});
+        deletecategory.addActionListener((e)->{delete();});
         refreshcategory.addActionListener((e)->{refreshc();});
         }
     private void loadSelectedcat(){
@@ -376,6 +397,11 @@ import java.util.List;
     }
     private void addc(){
         String cate=category.getText().trim();
+        if(cate.equals(""))
+            {
+                JOptionPane.showMessageDialog(this, "Category cannot be empty", "Error", JOptionPane.INFORMATION_MESSAGE);
+                return;
+        }
         try{
             category cat=new category(cate);
             categoryDAO.add(cat);
@@ -388,7 +414,38 @@ import java.util.List;
             JOptionPane.showMessageDialog(this, "Error adding category ", "Error", JOptionPane.INFORMATION_MESSAGE);
         }
     }
-
+    private void delete(){
+        int row=table.getSelectedRow();
+        if(row==-1){
+            JOptionPane.showMessageDialog(this,"Please select a row to delete","Error",JOptionPane.INFORMATION_MESSAGE);
+            return;}
+        int confirm = JOptionPane.showConfirmDialog(this,
+            "Are you sure you want to delete this category?",
+            "Confirm Delete", JOptionPane.YES_NO_OPTION);
+        if(confirm==JOptionPane.YES_OPTION)
+        {
+            try{
+                int id = (int) table.getValueAt(row, 0);
+                boolean del=categoryDAO.delete(id);
+                if(del){
+                    JOptionPane.showMessageDialog(this, "Deleted Category Successfully","ErrSuccessor",JOptionPane.INFORMATION_MESSAGE);
+                }
+                else{
+                    JOptionPane.showMessageDialog(this, "Error in deleting category","Error",JOptionPane.INFORMATION_MESSAGE);
+                }
+                loadcat();
+                clearSection();
+        }
+        catch(SQLException e)
+        {
+            JOptionPane.showMessageDialog(this,
+                    "Error deleting category: " + e.getMessage(),
+                    "Database Error", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
+        }
+    }
+        
+    }
     private void updatec(){
         int row = table.getSelectedRow();
         if (row==-1) {
