@@ -12,7 +12,7 @@ public class Expense{
     public Expense(){
         
     }
-    public Expense(int id ,String description,double amount,String date,String category)
+    public Expense(int id ,String description,String date,double amount,String category)
     {
         this.eid=id;
         this.description=description;

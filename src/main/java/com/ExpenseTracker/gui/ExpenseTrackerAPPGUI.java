@@ -224,7 +224,7 @@ import java.util.List;
             if (exp != null) {
                 exp.setAmount(Double.parseDouble(amount.getText().trim()));
                 exp.setDescription(description.getText().trim());
-                if (ExpenseDAO.updateTodo(exp)) {
+                if (ExpenseDAO.update(exp)) {
                     JOptionPane.showMessageDialog(this, "expense updated successfully", "Success", JOptionPane.INFORMATION_MESSAGE);
                     loadexpense();
                     clearSection();

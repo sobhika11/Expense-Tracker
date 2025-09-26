@@ -22,7 +22,7 @@ public class ExpenseDAO {
     private static final String SELECT_ALL = "SELECT * FROM expense order by eid ";
     private static final String INSERT_EXPENSE="Insert INTO expense(description,amount,date,category,cid) VALUES(?,?,?,?,?)";
     private static final String SELECT_TODO_BY_ID = "SELECT * FROM expense WHERE eid = ?";
-    private static final String UPDATE_EXPENSE = "UPDATE expense SET description = ?, amount = ?, date = ? WHERE eid = ?";
+    private static final String UPDATE_EXPENSE ="UPDATE expense SET description = ?, amount = ?, date = ?, category = ? WHERE eid = ?";
     private static final String DELETE_EXPENSE = "DELETE FROM expense WHERE eid = ?";
     private static final String FILTER_EXPENSE = "SELECT * FROM expense WHERE category = ? ";
     private static final String CATEGORY_ID="SELECT id FROM category WHERE name=?";
@@ -48,7 +48,8 @@ public class ExpenseDAO {
         String description=res.getString("description");
         String date=res.getString("date");
         double amt=res.getDouble("amount");
-        Expense exp=new Expense(id,description,date,amt); 
+         String category = res.getString("category"); 
+        Expense exp=new Expense(id,description,date,amt,category); 
         return exp;
 
     }
@@ -110,7 +111,7 @@ public class ExpenseDAO {
             }
         }
     }
-    public static boolean updateTodo(Expense exp) throws SQLException {
+    public static boolean update(Expense exp) throws SQLException {
         try (
             Connection conn = DatabaseConnection.getDBConnection();
             PreparedStatement stmt = conn.prepareStatement(UPDATE_EXPENSE)
@@ -119,6 +120,7 @@ public class ExpenseDAO {
             stmt.setString(3, exp.getDate());
             stmt.setDouble(2, exp.getAmount());
             stmt.setInt(4, exp.getId());
+            stmt.setString(5, exp.getCategory());
             int rowsAffected = stmt.executeUpdate();
             return rowsAffected > 0;
         }
