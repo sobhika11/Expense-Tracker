@@ -470,6 +470,7 @@ import java.util.List;
 
     private void refreshc(){
         loadcat();
+        clearSection();
     }
     private void clearSection(){
         category.setText("");
