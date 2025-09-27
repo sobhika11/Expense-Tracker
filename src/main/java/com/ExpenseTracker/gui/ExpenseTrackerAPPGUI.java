@@ -24,23 +24,25 @@ import java.util.List;
     private JButton addExpense;
     private JButton updateExpense;
     private JButton deleteExpense;
+    private JButton Home;
     private JButton refresh;
     private JTextField category;
     private JTextField dateField; 
+    private JPanel topPanel;
     private JComboBox<String> comboBox;
 
     public ExpenseGUI(){
-        initializeComponents();
+        // initializeComponents();
         setUpLayout();
         setupEventListeners(); 
     }
 
-    public void initializeComponents(){
-        setSize(800,600);
-        setTitle("Expense page");
-        setLocationRelativeTo(null);
+    // public void initializeComponents(){
+    //     setSize(800,600);
+    //     setTitle("Expense page");
+    //     setLocationRelativeTo(null);
 
-    }
+    // }
     private void setupEventListeners(){
         addExpense.addActionListener((e)->{add();});
         updateExpense.addActionListener((e)->{update();});
@@ -54,6 +56,7 @@ import java.util.List;
     updateExpense = new JButton("Update");
     deleteExpense = new JButton("Delete");
     refresh = new JButton("Refresh");
+    Home=new JButton("Home");
 
     setLayout(new BorderLayout());
 
@@ -116,7 +119,7 @@ import java.util.List;
     buttonPanel.add(deleteExpense);
     buttonPanel.add(refresh);
 
-    JPanel topPanel = new JPanel(new BorderLayout());
+    topPanel = new JPanel(new BorderLayout());
     topPanel.add(inputPanel, BorderLayout.CENTER);
     topPanel.add(buttonPanel, BorderLayout.SOUTH);
 
@@ -135,12 +138,15 @@ import java.util.List;
         }
     });
 
-    add(new JScrollPane(table), BorderLayout.CENTER); 
+    // add(new JScrollPane(table), BorderLayout.CENTER); 
     String []cat=categoryDAO.getAllCat();
     comboBox=new JComboBox<>(cat);
-    JPanel comboPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+    JPanel comboPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
     comboPanel.add(comboBox);
-    topPanel.add(comboPanel, BorderLayout.WEST);
+    JPanel leftpanel=new JPanel(new FlowLayout());
+    leftpanel.add(Home);
+    leftpanel.add(comboBox);
+    topPanel.add(leftpanel,BorderLayout.WEST);
     add(topPanel, BorderLayout.NORTH); 
     loadexpense();
     }
@@ -212,8 +218,8 @@ import java.util.List;
                     JOptionPane.showMessageDialog(this,
                             "expense deleted successfully",
                             "Success", JOptionPane.INFORMATION_MESSAGE);
-                    loadexpense(); // refresh table
-                    clearSection();
+                        loadexpense();
+                        clearSection();
                 } else {
                     JOptionPane.showMessageDialog(this,
                             "Failed to delete todo",
@@ -287,6 +293,18 @@ import java.util.List;
                 tablemodel.addRow(row);
             }
         }
+        public JPanel getPanel(ExpenseTrackerAPPGUI exp) {
+        setUpLayout();          
+        setupEventListeners(); 
+        loadexpense();          
+        JPanel panel = new JPanel(new BorderLayout());
+        Home.addActionListener((e)->{
+            exp.showHome();
+        });
+        panel.add(topPanel, BorderLayout.NORTH); 
+        panel.add(new JScrollPane(table), BorderLayout.CENTER);
+        return panel;
+        }
         
 }
 
@@ -295,26 +313,29 @@ import java.util.List;
     private JButton deletecategory;
     private JButton upadatecategory;
     private JButton refreshcategory;
+    private JButton Home;
     private JTextField category;
     private DefaultTableModel tablemodel;
     private JTable table;
+    private JPanel mainp;
 
     public CategoryGUI(){
-        initializeComponents();
+        // initializeComponents();
+        setTitle("Category");
         setUpLayout();
         setupEventListeners();
         loadcat();
         
     }
-    private void initializeComponents(){
-        setTitle("Expense-Tracker");
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(800, 600);
-        setLocationRelativeTo(null);
+    // private void initializeComponents(){
+    //     setTitle("Expense-Tracker");
+    //     setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    //     setSize(800, 600);
+    //     setLocationRelativeTo(null);
        
         
 
-    }
+    // }
     
     private void setUpLayout(){
         setLayout(new BorderLayout());
@@ -327,7 +348,9 @@ import java.util.List;
         buttonpanel.add(upadatecategory);
         buttonpanel.add(deletecategory);
         buttonpanel.add(refreshcategory);
-
+        JPanel bpanel =new JPanel(new FlowLayout());
+        Home = new JButton("Home");
+        bpanel.add(Home,BorderLayout.WEST);
         JPanel inputpanel=new JPanel(new GridBagLayout());
         GridBagConstraints g=new GridBagConstraints();
         g.insets=new Insets(10,10,10,10);
@@ -340,9 +363,10 @@ import java.util.List;
         category.setPreferredSize(new Dimension(50,25));
         inputpanel.add(category,g);
 
-        JPanel mainp=new JPanel(new BorderLayout());
+        mainp=new JPanel(new BorderLayout());
         mainp.add(inputpanel,BorderLayout.CENTER);
         mainp.add(buttonpanel,BorderLayout.SOUTH);
+        mainp.add(bpanel,BorderLayout.WEST);
 
         String [] filterbox={"Id","categories"};
         tablemodel =new DefaultTableModel(filterbox,0)
@@ -360,9 +384,9 @@ import java.util.List;
             loadSelectedcat();
             }
         });
-        JScrollPane scroll=new JScrollPane(table);
-        add(scroll,BorderLayout.CENTER);
-        add(mainp,BorderLayout.NORTH);
+        // JScrollPane scroll=new JScrollPane(table);
+        // add(scroll,BorderLayout.CENTER);
+        // add(mainp,BorderLayout.NORTH);
         
     }
    
@@ -372,6 +396,19 @@ import java.util.List;
         deletecategory.addActionListener((e)->{delete();});
         refreshcategory.addActionListener((e)->{refreshc();});
         }
+    
+    public JPanel getPanel(ExpenseTrackerAPPGUI exp){
+        setUpLayout();
+        setupEventListeners();
+        loadcat();
+        JPanel panel = new JPanel(new BorderLayout());
+        Home.addActionListener(e -> {
+            exp.showHome(); 
+        });
+        panel.add(mainp,BorderLayout.NORTH);
+        panel.add(new JScrollPane(table),BorderLayout.CENTER);
+        return panel;
+    }
     private void loadSelectedcat(){
             int row = table.getSelectedRow();
             if(row != -1){
@@ -481,6 +518,7 @@ import java.util.List;
 public class ExpenseTrackerAPPGUI extends JFrame {
     private JButton expense;
     private JButton category;
+    private JPanel btpanel;
 
     public ExpenseTrackerAPPGUI()
     {
@@ -488,6 +526,7 @@ public class ExpenseTrackerAPPGUI extends JFrame {
         setUpLayout();
         actionListeners();
     }
+    
     private void initializeComponents(){
         setTitle("Home page");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -500,7 +539,7 @@ public class ExpenseTrackerAPPGUI extends JFrame {
     private void setUpLayout(){
         
         setLayout(new BorderLayout());
-        JPanel btpanel=new JPanel(new GridBagLayout());
+        btpanel=new JPanel(new GridBagLayout());
         GridBagConstraints g=new GridBagConstraints();
         g.insets=new Insets(10, 10, 10, 10);
         btpanel.add(expense,g);
@@ -508,16 +547,31 @@ public class ExpenseTrackerAPPGUI extends JFrame {
         expense.setPreferredSize(new Dimension(200,100));
         category.setPreferredSize(new Dimension(200,100));
         add(btpanel,BorderLayout.CENTER);
+        revalidate();
+        repaint();
 
     }
     private void actionListeners(){
-        expense.addActionListener((e)->{
-            ExpenseGUI expengui=new ExpenseGUI();
-            expengui.setVisible(true);
+            expense.addActionListener(e -> {
+            ExpenseGUI expengui = new ExpenseGUI(); 
+            getContentPane().removeAll();           
+            getContentPane().add(expengui.getPanel(this));
+            revalidate();
+            repaint();
         });
         category.addActionListener((e)->{
-            CategoryGUI catgui=new CategoryGUI();
-            catgui.setVisible(true);
+            CategoryGUI cat=new CategoryGUI();
+            getContentPane().removeAll();
+            getContentPane().add(cat.getPanel(this));
+            revalidate();
+            repaint();
         });
+        
+    }
+    public void showHome() {
+        getContentPane().removeAll();  
+        setUpLayout();               
+        revalidate();
+        repaint();
     }
 }
