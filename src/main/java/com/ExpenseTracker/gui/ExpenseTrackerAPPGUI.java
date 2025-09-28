@@ -147,7 +147,7 @@ import java.util.List;
     leftpanel.add(Home);
     leftpanel.add(comboBox);
     topPanel.add(leftpanel,BorderLayout.WEST);
-    add(topPanel, BorderLayout.NORTH); 
+    // add(topPanel, BorderLayout.NORTH); 
     loadexpense();
     }
     private void clearSection(){
